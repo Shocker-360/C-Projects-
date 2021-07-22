@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <string.h>
-//I, V, X, L, C, D and M.
-//IV = 5; VI = 6
+
 int indeex(char array[], char num, int size);
 
 int ind;
