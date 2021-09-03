@@ -14,6 +14,7 @@ static int insertData(const char* s, string id, string name, string age, string 
 static int selectData(const char* s);
 static int callback(void *NotUsed, int argc, char** argv, char** azColName);
 static int searchTable_id(const char* s, string id);
+static int searchTable_name(const char* s, string name);
 static int deleteTable_name(const char* s, string name);
 static int deleteTable_id(const char* s, string id);
 static int updateTable_name(const char* s, string name, string id, string age, string email, string phone);
@@ -23,22 +24,21 @@ int main()
     const char* dir = "students.db";
     sqlite3* DB;
 
-    //createDB(dir);
-    //createTable(dir);
+    // createDB(dir);
+    // createTable(dir);
 
     int choice = 0;
 
-    while (choice != 7)
+    while (choice != 6)
     {
         cout << "\n\t\tEnter your choice" << endl;
         cout << "\t\t--------------------" << endl;
         cout << "\t\t1. Show list of all students." << endl;
         cout << "\t\t2. Add student." << endl;
         cout << "\t\t3. Update student." << endl;
-        cout << "\t\t4. Remove student by name." << endl;
-        cout << "\t\t5. Remove student by id." << endl;
-        cout << "\t\t6. Search student by id." << endl;
-        cout << "\t\t7. Quit Program.\n" << endl;
+        cout << "\t\t4. Remove student." << endl;
+        cout << "\t\t5. Search student." << endl;
+        cout << "\t\t6. Quit Program.\n" << endl;
         cout << "\t\t--------------------" << endl;
 
         cin >> choice;
@@ -59,7 +59,7 @@ int main()
 
                 cout << "Enter id of the student: ";
                 cin >> id;
-                while (!isValid_id(id))
+                while (!isValid_id(id));
                 {
                     cout << "Invalid ID. Enter ID again: ";
                     cin >> id;
@@ -100,6 +100,7 @@ int main()
                 cout << endl;
 
                 insertData(dir, id, name, age, email, phone);
+
                 cout << endl;
                 break;
             }
@@ -107,6 +108,7 @@ int main()
             case 3:
             {
                 string name, id, age, email, phone;
+
                 cout << "Enter the name of the student: ";
                 cin >> name;
                 cout << endl;
@@ -134,6 +136,8 @@ int main()
                     cout << "Email is Invalid. Enter Email again: ";
                     cin >> email;
                 }
+            
+
 
                 cout << "Enter new Phone number for " << name << ": ";
                 cin >> phone;
@@ -152,53 +156,100 @@ int main()
             case 4:
             {
                 string name;
+                int ans;
 
-                cout << "Enter the name of student to be deleted: ";
-                cin >> name;
-                while (!isValid_name(name))
+                cout << "How do you want to delete the student?" << endl;
+                cout << "1. Delete by name.\n2. Delete by id." << endl;
+                cin >> ans;
+
+                switch(ans)
                 {
-                    cout << "Invalid name. Enter name again: ";
-                    cin >> name;
+                    case 1:
+                    {
+                        cout << "Enter the name of student to be deleted: ";
+                        cin >> name;
+                        while (!isValid_name(name))
+                        {
+                            cout << "Invalid name. Enter name again: ";
+                            cin >> name;
+                        }
+
+                        deleteTable_name(dir, name);
+                        break;
+                        
+                    }
+
+                    case 2:
+                    {
+                        string id;
+
+                        cout << "Enter the id of student to be deleted: ";
+                        cin >> id;
+                        while (!isValid_id(id))
+                        {
+                            cout << "Invalid id. Enter id again: ";
+                            cin >> id;
+                        }
+
+                        deleteTable_id(dir, id);
+                        break;
+
+                    }
                 }
 
-                deleteTable_name(dir, name);
+                break;
+
             }
 
             case 5:
             {
-                string id;
+                string id, name;
+                int ans;
 
-                cout << "Enter the id of student to be deleted: ";
-                cin >> id;
-                while (!isValid_id(id))
+                cout << "How do you want to search for student?" << endl;
+                cout << "1. Search by name\n2. Search by id" << endl;
+                cin >> ans;
+
+                switch(ans)
                 {
-                    cout << "Invalid id. Enter id again: ";
-                    cin >> id;
+                    case 1:
+                    {
+                        cout << "Enter the name of student you want to search: ";
+                        cin >> name;
+                        while (!isValid_name(name))
+                        {
+                            cout << "Invalid name. Enter name again: ";
+                            cin >> name;
+                        }
+
+                        cout << endl;
+                        searchTable_name(dir, name);
+                        cout << endl;
+                        break;
+
+                    }
+
+                    case 2:
+                    {
+                        cout<< "Enter the id of student: ";
+                        cin >> id;
+                        while (!isValid_id(id))
+                        {
+                            cout << "Invalid id. Enter id again: ";
+                            cin >> id;
+                        }
+                        
+                        cout << endl;
+                        searchTable_id(dir, id);
+                        cout << endl;
+                        break;
+                    }
                 }
 
-                deleteTable_id(dir, id);
                 break;
             }
 
             case 6:
-            {
-                string id;
-
-                cout<< "Enter the id of student: ";
-                cin >> id;
-                while (!isValid_id(id))
-                {
-                    cout << "Invalid id. Enter id again: ";
-                    cin >> id;
-                }
-                
-                cout << endl;
-                searchTable_id(dir, id);
-                cout << endl;
-                break;
-            }
-
-            case 7:
             {
                 cout << "Exiting program..." << endl;
                 break;
@@ -234,12 +285,12 @@ static int createTable(const char* s)
 {
     sqlite3* DB;
 
-    string sql = "CREATE TABLE IF NOT EXISTS STUDENTS("
-    "ID INTEGER, "
-    "NAME TEXT, "
+    string sql = "CREATE TABLE STUDENTS("
+    "ID INTEGER UNIQUE KEY, "
+    "NAME (25)TEXT, "
     "AGE INTEGER, "
-    "EMAIL TEXT, "
-    "PHONE TEXT );";
+    "EMAIL (50) TEXT, "
+    "PHONE (12) TEXT );";
 
     try
     {
@@ -335,7 +386,29 @@ static int callback(void *NotUsed, int argc, char** argv, char** azColName)
 static int searchTable_id(const char* s, string id)
 {
     sqlite3* DB;
-    string ans;
+    //string ans;
+
+    int exit = sqlite3_open(s, &DB);
+
+
+    cout << "ID\t\t" << "Name\t\t" << "Age\t\t" << "Email\t\t\t\t\t" << "Phone Number" << endl;
+    cout <<"-----\t\t-----\t\t-----\t\t-----\t\t\t\t\t-----"<< endl;
+
+
+    string sql1 = ("SELECT * FROM STUDENTS WHERE ID = ");
+    string sql = sql1 + "\'" + id +"\'" + ";";
+
+    sqlite3_exec(DB, sql.c_str(), callback, NULL, NULL);
+
+
+
+    return 0;
+}
+
+static int searchTable_name(const char* s, string name)
+{
+    sqlite3* DB;
+    //string ans;
 
     int exit = sqlite3_open(s, &DB);
 
@@ -344,8 +417,8 @@ static int searchTable_id(const char* s, string id)
     cout <<"-----\t\t-----\t\t-----\t\t-----\t\t-----"<< endl;
 
 
-    string sql1 = ("SELECT * FROM STUDENTS WHERE ID = ");
-    string sql = sql1 + "\'" + id +"\'" + ";";
+    string sql1 = ("SELECT * FROM STUDENTS WHERE NAME LIKE ");
+    string sql = sql1 + "\'" + name +"\'" + ";";
 
     sqlite3_exec(DB, sql.c_str(), callback, NULL, NULL);
 
@@ -393,12 +466,12 @@ static int updateTable_name(const char* s, string name, string id, string age, s
 
     //UPDATE STUDENTS SET id = 5, age = 90 WHERE NAME LIKE 'ROHAN';
 
-    string sql1 = "UPDATE STUDENTS SET id = ";
-    string sql2 = ", age = ";
-    string sql3 = ", email = ";
-    string sql4 = ", phone = ";
+    string sql1 = "UPDATE STUDENTS SET ID = ";
+    string sql2 = ", AGE = ";
+    string sql3 = ", EMAIL = ";
+    string sql4 = ", PHONE = ";
     string sql5 = " WHERE NAME LIKE ";
-    string sql = sql1 + id + sql2 + age + sql3 + email + sql4 + phone + sql5 + "\'" + name + "\'" + ";";
+    string sql = sql1 + id + sql2 + age + sql3 + "\'" + email + "\'" + sql4 + "\'" +phone + "\'" + sql5 + "\'" + name + "\'" + ";";
 
     sqlite3_exec(DB, sql.c_str(), callback, NULL, NULL);
     cout << sql << endl;
